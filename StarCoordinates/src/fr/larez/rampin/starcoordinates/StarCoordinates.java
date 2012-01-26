@@ -1,7 +1,12 @@
 package fr.larez.rampin.starcoordinates;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,13 +18,23 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-public class StarCoordinates extends JPanel {
+public class StarCoordinates extends JPanel implements MouseListener, MouseMotionListener {
 
     private static final long serialVersionUID = -1501548717704067038L;
 
     private Axis[] m_Axes;
     private Vector<Thing> m_Things;
     private String m_ObjectType;
+
+    Point2D.Float m_Origin;
+    float m_ScaleX;
+    float m_ScaleY;
+
+    private Axis m_ActiveAxis = null;
+    private static final int ACT_NONE = 0;
+    private static final int ACT_HOVER = 1;
+    private static final int ACT_DRAGGING = 2;
+    private int m_Action = ACT_NONE;
 
     public StarCoordinates()
     {
@@ -32,23 +47,35 @@ public class StarCoordinates extends JPanel {
         {
             JOptionPane.showMessageDialog(this, "Impossible de charger le fichier", "Erreur", JOptionPane.ERROR_MESSAGE);
         }
+
+        m_ScaleX = getWidth() * 0.4f;
+        m_ScaleY = getHeight() * 0.4f;
+        m_Origin = new Point2D.Float(getWidth()*0.5f, getHeight()*0.5f);
+
+        addMouseListener(this);
+        addMouseMotionListener(this);
     }
 
     @Override
     public void paintComponent(Graphics g)
     {
+        // Clear!
+        g.setColor(Color.white);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
         // Autoscaling -- 'cause we can!
-        float scale_x = getWidth() * 0.4f;
-        float scale_y = getHeight() * 0.4f;
-        Point2D.Float origin = new Point2D.Float(getWidth()*0.5f, getHeight()*0.5f);
-        int ox = (int)origin.x;
-        int oy = (int)origin.y;
+        m_ScaleX = getWidth() * 0.4f;
+        m_ScaleY = getHeight() * 0.4f;
+        m_Origin = new Point2D.Float(getWidth()*0.5f, getHeight()*0.5f);
+        int ox = (int)m_Origin.x;
+        int oy = (int)m_Origin.y;
 
         // Calibrate the axes, if they want to
         for(Axis axis : m_Axes)
             axis.calibrate();
 
         // The things -- gotta draw'em all
+        g.setColor(Color.black);
         for(Thing thing : m_Things)
         {
             // Project it someplace funny
@@ -63,22 +90,45 @@ public class StarCoordinates extends JPanel {
             }
 
             // Draw it
-            int x = ox + (int)(pos.x * scale_x);
-            int y = oy + (int)(pos.y * scale_y);
+            int x = ox + (int)(pos.x * m_ScaleX);
+            int y = oy + (int)(pos.y * m_ScaleY);
             g.drawLine(x-2, y, x+2, y);
             g.drawLine(x, y-2, x, y+2);
         }
 
         // And the axes too
+        final FontMetrics metrics = g.getFontMetrics();
+        final int ascent = metrics.getAscent();
+        final int descent = metrics.getDescent();
         for(Axis axis : m_Axes)
         {
             if(!axis.isShown())
                 continue;
-            int x = ox + (int)(axis.getEndPoint().x * scale_x);
-            int y = oy + (int)(axis.getEndPoint().y * scale_y);
+
+            // The axis
+            int x = ox + (int)(axis.getEndPoint().x * m_ScaleX);
+            int y = oy + (int)(axis.getEndPoint().y * m_ScaleY);
 
             g.drawLine(ox, oy, x, y);
-            g.drawString(axis.getLabel() + " (" + axis.getEndValue() + ")", x, y);
+
+            // The handle
+            if(m_ActiveAxis == axis && m_Action == ACT_DRAGGING)
+                g.setColor(Color.red);
+            else if(m_ActiveAxis == axis && m_Action == ACT_HOVER)
+                g.setColor(Color.yellow);
+            g.fillRect(x-3, y-3, 6, 6);
+
+            // Draw the label, a little away from the handle
+            g.setColor(Color.black);
+            float dx = -axis.getEndPoint().y;
+            float dy = axis.getEndPoint().x;
+            float il = 1.0f/(float)Math.sqrt(dx*dx + dy*dy);
+            int lx = (int)(dx * il * 10.0f) + x;
+            int ly = (int)(dy * il * 10.0f) + y;
+            String label = axis.getLabel() + " (" + axis.getEndValue() + ")";
+            lx -= g.getFontMetrics().stringWidth(label)/2;
+            ly += ascent/2 - descent/2;
+            g.drawString(axis.getLabel() + " (" + axis.getEndValue() + ")", lx, ly);
         }
     }
 
@@ -183,5 +233,81 @@ public class StarCoordinates extends JPanel {
         r.close();
         return lines;
     }
+
+    private Axis findAxisUnder(int x, int y)
+    {
+        int ox = (int)m_Origin.x;
+        int oy = (int)m_Origin.y;
+        for(Axis axis : m_Axes)
+        {
+            int ax = (int)(axis.getEndPoint().x * m_ScaleX) + ox;
+            int ay = (int)(axis.getEndPoint().y * m_ScaleY) + oy;
+
+            int dx = ax - x;
+            int dy = ay - y;
+            if(dx*dx + dy*dy <= 100)
+                return axis;
+        }
+        return null;
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e)
+    {
+        // Drag axes endpoints
+        if(m_Action == ACT_DRAGGING)
+        {
+            float x = (e.getPoint().x - m_Origin.x)/m_ScaleX;
+            float y = (e.getPoint().y - m_Origin.y)/m_ScaleY;
+            m_ActiveAxis.setEndPoint(x, y);
+            repaint();
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e)
+    {
+        // Hover on axes
+        if(m_Action == ACT_NONE || m_Action == ACT_HOVER)
+        {
+            m_ActiveAxis = findAxisUnder(e.getPoint().x, e.getPoint().y);
+            if(m_ActiveAxis == null)
+                m_Action = ACT_NONE;
+            else
+                m_Action = ACT_HOVER;
+            repaint();
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e)
+    {
+        m_ActiveAxis = findAxisUnder(e.getPoint().x, e.getPoint().y);
+        if(m_ActiveAxis == null)
+            m_Action = ACT_NONE;
+        else
+            m_Action = ACT_DRAGGING;
+        repaint();
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e)
+    {
+        if(m_Action == ACT_DRAGGING)
+        {
+            m_Action = ACT_NONE;
+            mouseMoved(e);
+            repaint();
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
 
 }

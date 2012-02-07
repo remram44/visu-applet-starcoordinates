@@ -161,6 +161,8 @@ public class StarCoordinates extends PApplet implements ComponentListener {
                 fill(255, 0, 0);
             else if(m_ActiveAxis == axis && m_Action == ACT_HOVER)
                 fill(255, 255, 0);
+            else
+                fill(0, 0, 0);
             rect(x-3, y-3, 6, 6);
 
             // Draw the label, a little away from the handle

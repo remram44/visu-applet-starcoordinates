@@ -23,6 +23,9 @@ class Axis {
     private float m_EndValue = 1.0f;
     private float m_MaxValue = 0.0f;
 
+    private Float m_FilterMin = null;
+    private Float m_FilterMax = null;
+
     private Map<String, Integer> m_Categories = null;
 
     public static final int NUMBER = 1;
@@ -131,6 +134,40 @@ class Axis {
 
             m_MaxValue = 0.0f;
         }
+    }
+
+    public boolean filter(Thing thing)
+    {
+        float c = thing.getCoordinate(m_Coordinate);
+        if( (m_FilterMin == null || m_FilterMin <= c)
+         && (m_FilterMax == null || m_FilterMax >= c) )
+            return false;
+        else
+            return true;
+    }
+
+    public Float getFilterMin()
+    {
+        return m_FilterMin;
+    }
+
+    public Float getFilterMax()
+    {
+        return m_FilterMax;
+    }
+
+    public void setFilterMin(Float value)
+    {
+        m_FilterMin = value;
+        if(value != null && m_FilterMax != null && m_FilterMax < value)
+            m_FilterMax = null;
+    }
+
+    public void setFilterMax(Float value)
+    {
+        m_FilterMax = value;
+        if(value != null && m_FilterMin != null && m_FilterMin > value)
+            m_FilterMin = null;
     }
 
 }

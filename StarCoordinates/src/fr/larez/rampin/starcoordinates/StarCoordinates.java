@@ -31,7 +31,11 @@ public class StarCoordinates extends PApplet implements ComponentListener {
 
     private Axis m_ColorAxis = null;
 
-    private AxesOptionsPanel m_OptionsPanel;
+    private OptionsPanel m_OptionsPanel;
+
+    public static final int FILTER_NORMAL = 0x0;
+    public static final int FILTER_NOTSHOWN = 0x1;
+    public static final int FILTER_BRUSHED = 0x2;
 
     @Override
     public void setup()
@@ -50,7 +54,7 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         m_ScaleY = getHeight() * 0.4f;
         m_Origin = new Point2D.Float(getWidth()*0.5f, getHeight()*0.5f);
 
-        m_OptionsPanel = new AxesOptionsPanel(m_Axes, this);
+        m_OptionsPanel = new OptionsPanel(m_Axes, this);
         m_OptionsPanel.layout(getWidth(), getHeight());
 
         rectMode(CORNER);
@@ -77,21 +81,38 @@ public class StarCoordinates extends PApplet implements ComponentListener {
             axis.calibrate();
 
         // The things -- gotta draw'em all
-        stroke(0, 0, 0);
         for(Thing thing : m_Things)
         {
             // Project it someplace funny
             Point2D.Float pos = new Point2D.Float();
+            int filters = thing.isBrushed()?FILTER_BRUSHED:FILTER_NORMAL;
             for(Axis axis : m_Axes)
             {
                 if(!axis.isShown())
                     continue;
+                if(axis.filter(thing))
+                    filters |= FILTER_NOTSHOWN;
                 Point2D.Float proj = axis.project(thing);
                 pos.x += proj.x;
                 pos.y += proj.y;
             }
 
             // Draw it
+            switch(filters)
+            {
+            case FILTER_NORMAL:
+                stroke(0, 0, 0);
+                break;
+            case FILTER_BRUSHED:
+                stroke(255, 0, 0);
+                break;
+            case FILTER_BRUSHED | FILTER_NOTSHOWN:
+                stroke(255, 191, 191);
+                break;
+            case FILTER_NOTSHOWN:
+                stroke(191, 191, 191);
+                break;
+            }
             int x = ox + (int)(pos.x * m_ScaleX);
             int y = oy + (int)(pos.y * m_ScaleY);
             line(x-2, y, x+2, y);
@@ -245,6 +266,9 @@ public class StarCoordinates extends PApplet implements ComponentListener {
     @Override
     public void mouseDragged()
     {
+        if(m_OptionsPanel.active())
+            m_OptionsPanel.drag(mouseX, mouseY);
+
         // Drag axes endpoints
         if(m_Action == ACT_DRAGGING)
         {
@@ -273,7 +297,20 @@ public class StarCoordinates extends PApplet implements ComponentListener {
     @Override
     public void mousePressed()
     {
-        if(m_OptionsPanel.click(mouseX, mouseY))
+        int button;
+        switch(mouseButton)
+        {
+        case LEFT:
+            button = 1;
+            break;
+        case RIGHT:
+            button = 2;
+            break;
+        default:
+            button = 3;
+            break;
+        }
+        if(m_OptionsPanel.click(mouseX, mouseY, button))
             return;
 
         m_ActiveAxis = findAxisUnder(mouseX, mouseY);
@@ -287,6 +324,9 @@ public class StarCoordinates extends PApplet implements ComponentListener {
     @Override
     public void mouseReleased()
     {
+        if(m_OptionsPanel.active())
+            m_OptionsPanel.release(mouseX, mouseY);
+
         if(m_Action == ACT_DRAGGING)
         {
             m_Action = ACT_NONE;

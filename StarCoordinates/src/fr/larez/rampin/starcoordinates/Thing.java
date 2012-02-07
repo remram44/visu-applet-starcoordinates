@@ -4,6 +4,7 @@ public class Thing {
 
     private String m_Name;
     private float[] m_Coordinates;
+    private boolean m_Brushed = false;
 
     public Thing(String name, float[] coordinates)
     {
@@ -14,6 +15,16 @@ public class Thing {
     public float getCoordinate(int i)
     {
         return m_Coordinates[i];
+    }
+
+    public void setBrushed(boolean b)
+    {
+        m_Brushed = b;
+    }
+
+    public boolean isBrushed()
+    {
+        return m_Brushed;
     }
 
 }

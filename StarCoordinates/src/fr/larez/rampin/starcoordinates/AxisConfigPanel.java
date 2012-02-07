@@ -26,6 +26,10 @@ public class AxisConfigPanel {
     private static final int GRAPH_W = 50;
     private static final int GRAPH_H = 10;
 
+    private static final int LIMIT_MIN = 1;
+    private static final int LIMIT_MAX = 2;
+    private int m_Drag;
+
     public AxisConfigPanel(Axis axis, StarCoordinates app)
     {
         m_Axis = axis;
@@ -84,16 +88,29 @@ public class AxisConfigPanel {
         g.noStroke();
         g.fill(0, 0, 0);
         g.rect(GRAPH_X, GRAPH_Y, GRAPH_W, GRAPH_H);
+        g.noFill();
+        g.stroke(255, 0, 0);
+        if(m_Axis.getFilterMin() != null)
+        {
+            int l1 = (int)((m_Axis.getFilterMin() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
+            g.line(GRAPH_X + l1, GRAPH_Y, GRAPH_X + l1, GRAPH_Y + GRAPH_H);
+        }
+        if(m_Axis.getFilterMax() != null)
+        {
+            int l2 = (int)((m_Axis.getFilterMax() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
+            g.line(GRAPH_X + l2, GRAPH_Y, GRAPH_X + l2, GRAPH_Y + GRAPH_H);
+        }
 
         g.popMatrix();
     }
 
-    public void click(int x, int y)
+    public void click(int x, int y, int button)
     {
         x -= m_PosX;
         y -= m_PosY;
 
         // Checkbox
+        if(button == 1)
         {
             final int x2 = CHECKBOX_X + CHECKBOX_SIZE;
             final int y2 = CHECKBOX_Y + CHECKBOX_SIZE;
@@ -106,6 +123,7 @@ public class AxisConfigPanel {
         }
 
         // Color switch
+        if(button == 1)
         {
             final int x2 = COLOR_X + COLOR_SIZE;
             final int y2 = COLOR_Y + COLOR_SIZE;
@@ -119,6 +137,71 @@ public class AxisConfigPanel {
                 return ;
             }
         }
+
+        // Graph
+        {
+            final int x2 = GRAPH_X + GRAPH_W;
+            final int y2 = GRAPH_Y + GRAPH_H;
+            if(x >= COLOR_X && x < x2 && y >= COLOR_Y && y < y2)
+            {
+                if(button == 1)
+                {
+                    // Which limit to move?
+                    Integer l1 = null;
+                    if(m_Axis.getFilterMin() != null)
+                        l1 = (int)((m_Axis.getFilterMin() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
+                    Integer l2 = null;
+                    if(m_Axis.getFilterMax() != null)
+                        l2 = (int)((m_Axis.getFilterMax() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
+
+                    int xl = x - GRAPH_X;
+                    if(l1 != null && Math.abs(xl - l1) < 8)
+                        m_Drag = LIMIT_MIN;
+                    else if(l2 != null && Math.abs(xl - l2) < 8)
+                        m_Drag = LIMIT_MAX;
+                    else if(xl < GRAPH_W/2)
+                        m_Drag = LIMIT_MIN;
+                    else
+                        m_Drag = LIMIT_MAX;
+
+                    drag(x + m_PosX, y + m_PosY);
+                }
+                else if(button == 2)
+                {
+                    m_Axis.setFilterMin(null);
+                    m_Axis.setFilterMax(null);
+                    m_App.redraw();
+                }
+            }
+        }
+    }
+
+    public void drag(int x, int y)
+    {
+        x -= m_PosX;
+        y -= m_PosY;
+
+        int xl = x - GRAPH_X;
+        if(xl < 0 || xl > GRAPH_W)
+            return ;
+
+        float value = xl * m_Axis.getEndValue() * 2.0f / GRAPH_W - m_Axis.getEndValue();
+        if(m_Drag == LIMIT_MIN)
+            m_Axis.setFilterMin(value);
+        else if(m_Drag == LIMIT_MAX)
+            m_Axis.setFilterMax(value);
+        else
+            return ;
+
+        m_App.redraw();
+    }
+
+    public void release(int x, int y)
+    {
+        x -= m_PosX;
+        y -= m_PosY;
+
+        m_Drag = 0;
     }
 
     public void setPosition(int x, int y)

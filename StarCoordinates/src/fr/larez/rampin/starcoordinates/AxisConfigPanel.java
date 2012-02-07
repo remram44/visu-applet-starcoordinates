@@ -2,6 +2,11 @@ package fr.larez.rampin.starcoordinates;
 
 import processing.core.PGraphics;
 
+/**
+ * The configuration panel for a single Axis.
+ *
+ * @author Rémi Rampin
+ */
 public class AxisConfigPanel {
 
     private Axis m_Axis;
@@ -36,6 +41,9 @@ public class AxisConfigPanel {
         m_App = app;
     }
 
+    /**
+     * Draw the panel on the given PGraphics.
+     */
     public void draw(PGraphics g)
     {
         g.pushMatrix();
@@ -104,6 +112,9 @@ public class AxisConfigPanel {
         g.popMatrix();
     }
 
+    /**
+     * Handle a click event.
+     */
     public void click(int x, int y, int button)
     {
         x -= m_PosX;
@@ -176,6 +187,9 @@ public class AxisConfigPanel {
         }
     }
 
+    /**
+     * A mouse dragging event.
+     */
     public void drag(int x, int y)
     {
         x -= m_PosX;
@@ -196,6 +210,9 @@ public class AxisConfigPanel {
         m_App.redraw();
     }
 
+    /**
+     * A mouse release event.
+     */
     public void release(int x, int y)
     {
         x -= m_PosX;
@@ -204,6 +221,9 @@ public class AxisConfigPanel {
         m_Drag = 0;
     }
 
+    /**
+     * Repositions the panel.
+     */
     public void setPosition(int x, int y)
     {
         m_PosX = x;

@@ -2,8 +2,22 @@ package fr.larez.rampin.starcoordinates;
 
 import processing.core.PGraphics;
 
+/**
+ * Random functions used throughout the code.
+ *
+ * @author Rémi Rampin
+ */
 public class Utils {
 
+    /**
+     * Clip a text so that it is less than a given width.
+     *
+     * @param g A PGraphics on which the text would be drawn.
+     * @param text The String to be truncated.
+     * @param size The maximum available width.
+     * @return The original String if possible, else a truncated version ending
+     * with "...".
+     */
     public static String clipText(PGraphics g, String text, float size)
     {
         if(g.textWidth(text) < size)

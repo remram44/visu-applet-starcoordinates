@@ -11,6 +11,11 @@ import javax.swing.JOptionPane;
 
 import processing.core.PApplet;
 
+/**
+ * The applet, implemented as a Processing PApplet.
+ *
+ * @author Rémi Rampin
+ */
 public class StarCoordinates extends PApplet implements ComponentListener {
 
     private static final long serialVersionUID = -1501548717704067038L;
@@ -33,10 +38,19 @@ public class StarCoordinates extends PApplet implements ComponentListener {
 
     private OptionsPanel m_OptionsPanel;
 
+    /** Display type: default */
     public static final int FILTER_NORMAL = 0x0;
+    /** Display type: filtered out */
     public static final int FILTER_NOTSHOWN = 0x1;
+    /** Display type: brushed (highlighted) */
     public static final int FILTER_BRUSHED = 0x2;
 
+    /**
+     * Setup the applet.
+     *
+     * This method is called initially by Processing to set everything up; it
+     * acts as a constructor.
+     */
     @Override
     public void setup()
     {
@@ -63,6 +77,13 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         addComponentListener(this);
     }
 
+    /**
+     * Rendering method.
+     *
+     * This method is called everytime the applet needs to be drawn again. It
+     * calls other draw() methods to show all the different parts of the
+     * visualization.
+     */
     @Override
     public void draw()
     {
@@ -159,6 +180,14 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         m_OptionsPanel.draw(g);
     }
 
+    /**
+     * Initial import from a file.
+     *
+     * Loads data from a CSV file, to be shown in the applet.
+     *
+     * @param file The filename to use.
+     * @throws IOException On I/O problem or syntax error.
+     */
     private void loadData(String file) throws IOException
     {
         m_Things = new Vector<Thing>();
@@ -171,11 +200,13 @@ public class StarCoordinates extends PApplet implements ComponentListener {
 
         // Second line contains the datatypes for each column
         StringTokenizer types = new StringTokenizer(lines[1], ";");
-        assert(types.countTokens() == nb_tokens);
+        if(types.countTokens() != nb_tokens)
+            throw new IOException("Unexpected number of types on line 2");
 
         // First field should be the object tags
         String labeltype = types.nextToken();
-        assert(labeltype.toLowerCase().equals("string"));
+        if(!labeltype.toLowerCase().equals("string"))
+            throw new IOException("First row doesn't have STRING type");
         m_ObjectType = names.nextToken();
 
         // Create the axes
@@ -203,7 +234,8 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         for(i = 2; i < lines.length; i++)
         {
             StringTokenizer fields = new StringTokenizer(lines[i], ";");
-            assert(fields.countTokens() == nb_tokens);
+            if(fields.countTokens() != nb_tokens)
+                throw new IOException("Unexpected number of values on line " + (i+1));
             String name = fields.nextToken();
             float[] coordinates = new float[nb_tokens-1];
             int j = 0;
@@ -236,11 +268,17 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         System.out.println(shown + " axes are displayed");
     }
 
+    /**
+     * Set the axis which is used for color assignation.
+     */
     public void setColorAxis(Axis axis)
     {
         m_ColorAxis = axis;
     }
 
+    /**
+     * Retrieve the axis which is used for color assignation, or null.
+     */
     public Axis getColorAxis()
     {
         return m_ColorAxis;

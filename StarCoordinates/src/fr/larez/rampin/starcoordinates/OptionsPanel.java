@@ -2,6 +2,11 @@ package fr.larez.rampin.starcoordinates;
 
 import processing.core.PGraphics;
 
+/**
+ * The panel displayed on top of the visualization.
+ *
+ * @author Rémi Rampin
+ */
 public class OptionsPanel {
 
     private AxisConfigPanel[] m_Panels;
@@ -14,6 +19,9 @@ public class OptionsPanel {
             m_Panels[i] = new AxisConfigPanel(axes[i], app);
     }
 
+    /**
+     * Recompute the position of each AxisConfigPanel on size change.
+     */
     public void layout(int width, int height)
     {
         int y = 10;
@@ -32,6 +40,9 @@ public class OptionsPanel {
         }
     }
 
+    /**
+     * Draw the panel with the given PGraphics.
+     */
     public void draw(PGraphics g)
     {
         // TODO : Header ?
@@ -40,11 +51,24 @@ public class OptionsPanel {
             p.draw(g);
     }
 
+    /**
+     * Indicate whether the panel currently uses mouse input.
+     *
+     * If true, dragging and releasing events will be sent to draw() and
+     * release().
+     */
     public boolean active()
     {
         return m_Active != null;
     }
 
+    /**
+     * Handles a click.
+     *
+     * @param button Mouse button used (1, 2 or 3).
+     * @return True if the event was handled, false if it should be processed
+     * by the caller.
+     */
     public boolean click(int x, int y, int button)
     {
         for(AxisConfigPanel p : m_Panels)
@@ -59,12 +83,18 @@ public class OptionsPanel {
         return false;
     }
 
+    /**
+     * A mouse dragging event.
+     */
     public void drag(int x, int y)
     {
         if(m_Active != null)
             m_Active.drag(x, y);
     }
 
+    /**
+     * A mouse release event.
+     */
     public void release(int x, int y)
     {
         if(m_Active != null)

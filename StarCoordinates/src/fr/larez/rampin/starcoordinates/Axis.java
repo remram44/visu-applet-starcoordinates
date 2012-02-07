@@ -50,27 +50,43 @@ class Axis {
         }
     }
 
+    /**
+     * Returns the readable name for this dimension.
+     */
     public String getLabel()
     {
         return m_Label;
     }
 
+    /**
+     * Returns the type of dimension.
+     *
+     * The type might be either NUMBER (for any kind of numerical data,
+     * discrete or real) or CATEGORY (for other kinds of data, like strings).
+     */
     public int getType()
     {
         return m_Type;
     }
 
+    /**
+     * Registers a numerical value on this axis; used for calibration.
+     */
     public void value(float v)
     {
+        assert(m_Type == NUMBER && m_Categories == null);
         v = Math.abs(v);
         if(v > m_MaxValue)
             m_MaxValue = v;
         // Calibration is done elsewhere
     }
 
+    /**
+     * Registers a category on this axis, and assigns a number for it.
+     */
     public int category(String value)
     {
-        assert(m_Categories != null);
+        assert(m_Type == CATEGORY && m_Categories != null);
         Integer i = m_Categories.get(value);
         if(i != null)
             // We know about this category already
@@ -95,27 +111,45 @@ class Axis {
         return m_Shown;
     }
 
+    /**
+     * Set the location of the endpoint of this axis.
+     */
     public void setEndPoint(float x, float y)
     {
         m_EndPoint.setLocation(x, y);
     }
 
+    /**
+     * Returns the location of the endpoint of this axis.
+     */
     public Point2D.Float getEndPoint()
     {
         return (Point2D.Float)m_EndPoint.clone();
     }
 
+    /**
+     * Returns the maximum value on this axis, eg the scale.
+     */
     public float getEndValue()
     {
         return m_EndValue;
     }
 
+    /**
+     * Projects a Thing on this Axis.
+     *
+     * Adding the projection of a Thing on each Axis gives the position where
+     * it should be displayed.
+     */
     public Point2D.Float project(Thing thing)
     {
         float coordinate = thing.getCoordinate(m_Coordinate) / m_EndValue;
         return new Point2D.Float(m_EndPoint.x * coordinate, m_EndPoint.y * coordinate);
     }
 
+    /**
+     * Calibrates this Axis, eg computes the scale from the values.
+     */
     public void calibrate()
     {
         if(m_MaxValue > 0.0f)
@@ -136,6 +170,9 @@ class Axis {
         }
     }
 
+    /**
+     * Indicates whether a Thing should be filtered out.
+     */
     public boolean filter(Thing thing)
     {
         float c = thing.getCoordinate(m_Coordinate);
@@ -146,16 +183,27 @@ class Axis {
             return true;
     }
 
+    /**
+     * Returns the minimum value under which Things should be filtered out, or
+     * null.
+     */
     public Float getFilterMin()
     {
         return m_FilterMin;
     }
 
+    /**
+     * Returns the maximum value over which Things should be filtered out, or
+     * null.
+     */
     public Float getFilterMax()
     {
         return m_FilterMax;
     }
 
+    /**
+     * Sets the minimum value of the filter.
+     */
     public void setFilterMin(Float value)
     {
         m_FilterMin = value;
@@ -163,6 +211,9 @@ class Axis {
             m_FilterMax = null;
     }
 
+    /**
+     * Sets the maximum value of the filter.
+     */
     public void setFilterMax(Float value)
     {
         m_FilterMax = value;

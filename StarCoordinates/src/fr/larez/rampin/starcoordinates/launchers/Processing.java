@@ -3,6 +3,9 @@ package fr.larez.rampin.starcoordinates.launchers;
 import processing.core.PApplet;
 import fr.larez.rampin.starcoordinates.StarCoordinates;
 
+/**
+ * Simple launcher, taken from Processing's documentation.
+ */
 public class Processing {
 
     public static void main(String[] args)

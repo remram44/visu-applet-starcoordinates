@@ -4,6 +4,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -454,5 +455,13 @@ public class StarCoordinates extends PApplet implements ComponentListener {
 
     @Override
     public void componentHidden(ComponentEvent e) {}
+
+    /**
+     * Accessor for the Things.
+     */
+    public Iterable<Thing> getThings()
+    {
+        return Collections.unmodifiableCollection(m_Things);
+    }
 
 }

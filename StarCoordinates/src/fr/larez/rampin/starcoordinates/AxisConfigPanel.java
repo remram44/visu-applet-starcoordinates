@@ -35,6 +35,9 @@ public class AxisConfigPanel {
     private static final int LIMIT_MAX = 2;
     private int m_Drag;
 
+    private int[] m_Graph = null;
+    private int m_GraphMax;
+
     public AxisConfigPanel(Axis axis, StarCoordinates app)
     {
         m_Axis = axis;
@@ -48,6 +51,26 @@ public class AxisConfigPanel {
     {
         g.pushMatrix();
         g.translate(m_PosX, m_PosY);
+
+        // Compute the graph once
+        if(m_Graph == null)
+        {
+            m_Graph = new int[GRAPH_W];
+            for(int i = 0; i < GRAPH_W; i++)
+                m_Graph[i] = 0;
+            for(Thing t : m_App.getThings())
+            {
+                float coord = t.getCoordinate(m_Axis.coordinate());
+                int i = (int)((coord + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.01f));
+                m_Graph[i]++;
+            }
+            m_GraphMax = 0;
+            for(int i = 0; i < GRAPH_W; i++)
+            {
+                if(m_Graph[i] > m_GraphMax)
+                    m_GraphMax = m_Graph[i];
+            }
+        }
 
         g.stroke(0, 0, 0);
         g.fill(223, 223, 223);
@@ -94,9 +117,12 @@ public class AxisConfigPanel {
 
         // Graph
         g.noStroke();
-        g.fill(0, 0, 0);
+        g.fill(191, 191, 191);
         g.rect(GRAPH_X, GRAPH_Y, GRAPH_W, GRAPH_H);
+        g.stroke(0, 0, 0);
         g.noFill();
+        for(int i = 0; i < GRAPH_W; i++)
+            g.line(GRAPH_X + i, GRAPH_Y + GRAPH_H, GRAPH_X + i, GRAPH_Y + GRAPH_H - m_Graph[i]*GRAPH_H/m_GraphMax);
         g.stroke(255, 0, 0);
         if(m_Axis.getFilterMin() != null)
         {

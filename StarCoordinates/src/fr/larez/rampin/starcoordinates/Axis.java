@@ -136,6 +136,14 @@ class Axis {
     }
 
     /**
+     * Returns the dimension number of this axis.
+     */
+    public int coordinate()
+    {
+        return m_Coordinate;
+    }
+
+    /**
      * Projects a Thing on this Axis.
      *
      * Adding the projection of a Thing on each Axis gives the position where

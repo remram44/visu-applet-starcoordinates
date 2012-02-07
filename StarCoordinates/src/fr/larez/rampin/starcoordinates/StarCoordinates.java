@@ -1,5 +1,7 @@
 package fr.larez.rampin.starcoordinates;
 
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -9,7 +11,7 @@ import javax.swing.JOptionPane;
 
 import processing.core.PApplet;
 
-public class StarCoordinates extends PApplet {
+public class StarCoordinates extends PApplet implements ComponentListener {
 
     private static final long serialVersionUID = -1501548717704067038L;
 
@@ -26,6 +28,10 @@ public class StarCoordinates extends PApplet {
     private static final int ACT_HOVER = 1;
     private static final int ACT_DRAGGING = 2;
     private int m_Action = ACT_NONE;
+
+    private Axis m_ColorAxis = null;
+
+    private AxesOptionsPanel m_OptionsPanel;
 
     @Override
     public void setup()
@@ -44,7 +50,13 @@ public class StarCoordinates extends PApplet {
         m_ScaleY = getHeight() * 0.4f;
         m_Origin = new Point2D.Float(getWidth()*0.5f, getHeight()*0.5f);
 
+        m_OptionsPanel = new AxesOptionsPanel(m_Axes, this);
+        m_OptionsPanel.layout(getWidth(), getHeight());
+
         rectMode(CORNER);
+        noLoop();
+        frame.setResizable(true);
+        addComponentListener(this);
     }
 
     @Override
@@ -121,6 +133,9 @@ public class StarCoordinates extends PApplet {
             ly += ascent/2 - descent/2;
             text(axis.getLabel() + " (" + axis.getEndValue() + ")", lx, ly);
         }
+
+        // The OptionsPanel
+        m_OptionsPanel.draw(g);
     }
 
     private void loadData(String file) throws IOException
@@ -200,6 +215,16 @@ public class StarCoordinates extends PApplet {
         System.out.println(shown + " axes are displayed");
     }
 
+    public void setColorAxis(Axis axis)
+    {
+        m_ColorAxis = axis;
+    }
+
+    public Axis getColorAxis()
+    {
+        return m_ColorAxis;
+    }
+
     private Axis findAxisUnder(int x, int y)
     {
         int ox = (int)m_Origin.x;
@@ -226,7 +251,7 @@ public class StarCoordinates extends PApplet {
             float x = (mouseX - m_Origin.x)/m_ScaleX;
             float y = (mouseY - m_Origin.y)/m_ScaleY;
             m_ActiveAxis.setEndPoint(x, y);
-            repaint();
+            redraw();
         }
     }
 
@@ -241,19 +266,22 @@ public class StarCoordinates extends PApplet {
                 m_Action = ACT_NONE;
             else
                 m_Action = ACT_HOVER;
-            repaint();
+            redraw();
         }
     }
 
     @Override
     public void mousePressed()
     {
+        if(m_OptionsPanel.click(mouseX, mouseY))
+            return;
+
         m_ActiveAxis = findAxisUnder(mouseX, mouseY);
         if(m_ActiveAxis == null)
             m_Action = ACT_NONE;
         else
             m_Action = ACT_DRAGGING;
-        repaint();
+        redraw();
     }
 
     @Override
@@ -263,8 +291,25 @@ public class StarCoordinates extends PApplet {
         {
             m_Action = ACT_NONE;
             mouseMoved();
-            repaint();
+            redraw();
         }
     }
+
+    @Override
+    public void componentResized(ComponentEvent e)
+    {
+        m_OptionsPanel.layout(getWidth(), getHeight());
+                // PApplet#width and PApplet#height are not set at this point
+        redraw();
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {}
+
+    @Override
+    public void componentShown(ComponentEvent e) {}
+
+    @Override
+    public void componentHidden(ComponentEvent e) {}
 
 }

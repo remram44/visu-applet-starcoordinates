@@ -176,6 +176,69 @@ public class StarCoordinates extends PApplet implements ComponentListener {
             text(axis.getLabel() + " (" + axis.getEndValue() + ")", lx, ly);
         }
 
+        // Hover on things
+        Thing closest = null;
+        float closest_sqdist = 999999.0f;
+        for(Thing t : m_Things)
+        {
+            Point2D.Float pos = new Point2D.Float();
+            boolean filtered = false;
+            for(Axis axis : m_Axes)
+            {
+                if(!axis.isShown())
+                    continue;
+                if(axis.filter(t))
+                {
+                    filtered = true;
+                    break;
+                }
+                Point2D.Float proj = axis.project(t);
+                pos.x += proj.x;
+                pos.y += proj.y;
+            }
+            if(!filtered)
+            {
+                pos.x = m_Origin.x + pos.x * m_ScaleX;
+                pos.y = m_Origin.y + pos.y * m_ScaleY;
+                float dx = pos.x - mouseX;
+                float dy = pos.y - mouseY;
+                float sqdist = dx*dx + dy*dy;
+                if(closest == null || sqdist < closest_sqdist)
+                {
+                    closest = t;
+                    closest_sqdist = sqdist;
+                }
+            }
+        }
+        if(closest_sqdist < 100.0f)
+        {
+            // Some lines to show the coordinates
+            {
+                float x = m_Origin.x, y = m_Origin.y;
+                for(int i = 0; i < m_Axes.length; i++)
+                {
+                    final Axis axis = m_Axes[i];
+                    if(!axis.isShown())
+                        continue;
+                    Point2D.Float proj = axis.project(closest);
+                    float x2 = x + proj.x * m_ScaleX;
+                    float y2 = y + proj.y * m_ScaleY;
+                    stroke(191, 255, 191);
+                    line(x, y, x2, y2);
+                    stroke(191, 191, 255);
+                    float ex = m_Origin.x + proj.x * m_ScaleX;
+                    float ey = m_Origin.y + proj.y * m_ScaleY;
+                    line(m_Origin.x, m_Origin.y, ex, ey);
+                    fill(0, 0, 255);
+                    Utils.centeredText(g, String.valueOf(closest.getCoordinate(i)), ex, ey);
+                    x = x2;
+                    y = y2;
+                }
+            }
+            // Tooltip
+            Utils.drawTooltip(g, closest.getName(), mouseX, mouseY);
+        }
+
         // The OptionsPanel
         m_OptionsPanel.draw(g);
     }

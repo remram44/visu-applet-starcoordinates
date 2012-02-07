@@ -38,4 +38,28 @@ public class Utils {
         }
     }
 
+    public static void drawTooltip(PGraphics g, String text, float x, float y)
+    {
+        float tx = x + 10;
+        float ty = y + 15 + g.textAscent();
+        float tw = g.textWidth(text);
+        if(tx + tw >= g.width)
+            tx = x - tw - 10;
+        if(ty + g.textDescent() >= g.height)
+            ty = y - 10 - g.textDescent();
+        g.fill(240, 240, 150, 240);
+        g.stroke(0, 0, 0, 191);
+        g.rect(tx - 2, ty - g.textAscent() - 2, tw + 4, g.textAscent() + g.textDescent() + 4);
+        g.fill(0, 0, 0, 255);
+        g.noStroke();
+        g.text(text, tx, ty);
+    }
+
+    public static void centeredText(PGraphics g, String text, float x, float y)
+    {
+        x -= g.textWidth(text)/2;
+        y += g.textAscent()/2 - g.textDescent()/2;
+        g.text(text, x, y);
+    }
+
 }

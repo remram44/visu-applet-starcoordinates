@@ -41,4 +41,12 @@ public class Thing {
         return m_Brushed;
     }
 
+    /**
+     * Returns the name of this Thing.
+     */
+    public String getName()
+    {
+        return m_Name;
+    }
+
 }

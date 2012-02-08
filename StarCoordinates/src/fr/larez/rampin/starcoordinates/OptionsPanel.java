@@ -9,14 +9,24 @@ import processing.core.PGraphics;
  */
 public class OptionsPanel {
 
+    private StarCoordinates m_App;
     private AxisConfigPanel[] m_Panels;
     private AxisConfigPanel m_Active = null;
+
+    private static final int CHECKBOX_X = 10;
+    private static final int CHECKBOX_Y = 10;
+    private static final int CHECKBOX_SIZE = 8;
+
+    private static final int LABEL_X = 20;
+    private static final int LABEL_Y = 14;
+    private static final int RIGHT = LABEL_X + 100; // FIXME
 
     public OptionsPanel(Axis[] axes, StarCoordinates app)
     {
         m_Panels = new AxisConfigPanel[axes.length];
         for(int i = 0; i < axes.length; i++)
             m_Panels[i] = new AxisConfigPanel(axes[i], app);
+        m_App = app;
     }
 
     /**
@@ -24,7 +34,7 @@ public class OptionsPanel {
      */
     public void layout(int width, int height)
     {
-        int y = 10;
+        int y = 30;
         int x = 10;
 
         for(int i = 0; i < m_Panels.length; i++)
@@ -35,7 +45,7 @@ public class OptionsPanel {
             if(y + AxisConfigPanel.HEIGHT > height)
             {
                 x += AxisConfigPanel.WIDTH + 10;
-                y = 10;
+                y = 30;
             }
         }
     }
@@ -45,8 +55,26 @@ public class OptionsPanel {
      */
     public void draw(PGraphics g)
     {
-        // TODO : Header ?
+        // Header
+        {
+            // Checkbox
+            g.fill(255, 255, 255);
+            g.stroke(0, 0, 0);
+            g.rect(CHECKBOX_X, CHECKBOX_Y, CHECKBOX_SIZE, CHECKBOX_SIZE);
+            if(m_App.isBrushing())
+            {
+                final int x2 = CHECKBOX_X + CHECKBOX_SIZE;
+                final int y2 = CHECKBOX_Y + CHECKBOX_SIZE;
+                g.line(CHECKBOX_X, CHECKBOX_Y, x2, y2);
+                g.line(x2, CHECKBOX_Y, CHECKBOX_X, y2);
+            }
 
+            // Label
+            g.fill(0, 0, 0);
+            g.text("Brushing mode", LABEL_X, LABEL_Y + g.textAscent()/2 - g.textDescent()/2);
+        }
+
+        // Panels
         for(AxisConfigPanel p : m_Panels)
             p.draw(g);
     }
@@ -71,6 +99,13 @@ public class OptionsPanel {
      */
     public boolean click(int x, int y, int button)
     {
+        if(x >= CHECKBOX_X && y >= CHECKBOX_Y && x < RIGHT && y < CHECKBOX_Y + CHECKBOX_SIZE)
+        {
+            m_App.setBrushing(!m_App.isBrushing());
+            m_App.redraw();
+            return true;
+        }
+
         for(AxisConfigPanel p : m_Panels)
         {
             if(p.getX() <= x && p.getY() <= y && p.getX() + AxisConfigPanel.WIDTH > x && p.getY() + AxisConfigPanel.HEIGHT > y)

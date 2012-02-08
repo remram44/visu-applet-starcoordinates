@@ -40,6 +40,9 @@ public class StarCoordinates extends PApplet implements ComponentListener {
 
     private OptionsPanel m_OptionsPanel;
 
+    private boolean m_IsBrushing = false;
+    private int m_BrushSize = 10; // TODO : change brush size via mouse wheel
+
     /** Display type: default */
     public static final int FILTER_NORMAL = 0x0;
     /** Display type: filtered out */
@@ -74,6 +77,7 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         m_OptionsPanel.layout(getWidth(), getHeight());
 
         rectMode(CORNER);
+        ellipseMode(CORNER);
         noLoop();
         frame.setResizable(true);
         addComponentListener(this);
@@ -185,73 +189,82 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         }
 
         // Hover on things
-        Thing closest = null;
-        float closest_sqdist = 999999.0f;
-        for(Thing t : m_Things)
+        if(m_IsBrushing)
         {
-            Point2D.Float pos = new Point2D.Float();
-            boolean filtered = false;
-            for(Axis axis : m_Axes)
-            {
-                if(!axis.isShown())
-                    continue;
-                if(axis.filter(t))
-                {
-                    filtered = true;
-                    break;
-                }
-                Point2D.Float proj = axis.project(t);
-                pos.x += proj.x;
-                pos.y += proj.y;
-            }
-            if(!filtered)
-            {
-                pos.x = m_Origin.x + pos.x * m_ScaleX;
-                pos.y = m_Origin.y + pos.y * m_ScaleY;
-                float dx = pos.x - mouseX;
-                float dy = pos.y - mouseY;
-                float sqdist = dx*dx + dy*dy;
-                if(closest == null || sqdist < closest_sqdist)
-                {
-                    closest = t;
-                    closest_sqdist = sqdist;
-                }
-            }
+            fill(255, 191, 191, 191);
+            stroke(255, 127, 127, 255);
+            ellipse(mouseX - m_BrushSize, mouseY - m_BrushSize, m_BrushSize * 2, m_BrushSize * 2);
         }
-        if(closest_sqdist < 100.0f)
+        else
         {
-            // Some lines to show the coordinates
+            Thing closest = null;
+            float closest_sqdist = 999999.0f;
+            for(Thing t : m_Things)
             {
-                float x = m_Origin.x, y = m_Origin.y;
-                for(int i = 0; i < m_Axes.length; i++)
+                Point2D.Float pos = new Point2D.Float();
+                boolean filtered = false;
+                for(Axis axis : m_Axes)
                 {
-                    final Axis axis = m_Axes[i];
                     if(!axis.isShown())
                         continue;
-                    Point2D.Float proj = axis.project(closest);
-                    float x2 = x + proj.x * m_ScaleX;
-                    float y2 = y + proj.y * m_ScaleY;
-                    stroke(191, 255, 191);
-                    line(x, y, x2, y2);
-                    stroke(191, 191, 255);
-                    float ex = m_Origin.x + proj.x * m_ScaleX;
-                    float ey = m_Origin.y + proj.y * m_ScaleY;
-                    line(m_Origin.x, m_Origin.y, ex, ey);
-                    noStroke();
-                    fill(0, 0, 255);
-                    float value = closest.getCoordinate(i);
-                    String label;
-                    if(axis.getType() == Axis.NUMBER)
-                        label = String.valueOf(value);
-                    else
-                        label = axis.getCategory((int)(value + 0.5f));
-                    Utils.centeredText(g, label, ex, ey, 0xDFFFFFFF);
-                    x = x2;
-                    y = y2;
+                    if(axis.filter(t))
+                    {
+                        filtered = true;
+                        break;
+                    }
+                    Point2D.Float proj = axis.project(t);
+                    pos.x += proj.x;
+                    pos.y += proj.y;
+                }
+                if(!filtered)
+                {
+                    pos.x = m_Origin.x + pos.x * m_ScaleX;
+                    pos.y = m_Origin.y + pos.y * m_ScaleY;
+                    float dx = pos.x - mouseX;
+                    float dy = pos.y - mouseY;
+                    float sqdist = dx*dx + dy*dy;
+                    if(closest == null || sqdist < closest_sqdist)
+                    {
+                        closest = t;
+                        closest_sqdist = sqdist;
+                    }
                 }
             }
-            // Tooltip
-            Utils.drawTooltip(g, closest.getName(), mouseX, mouseY);
+            if(closest_sqdist < 100.0f)
+            {
+                // Some lines to show the coordinates
+                {
+                    float x = m_Origin.x, y = m_Origin.y;
+                    for(int i = 0; i < m_Axes.length; i++)
+                    {
+                        final Axis axis = m_Axes[i];
+                        if(!axis.isShown())
+                            continue;
+                        Point2D.Float proj = axis.project(closest);
+                        float x2 = x + proj.x * m_ScaleX;
+                        float y2 = y + proj.y * m_ScaleY;
+                        stroke(191, 255, 191);
+                        line(x, y, x2, y2);
+                        stroke(191, 191, 255);
+                        float ex = m_Origin.x + proj.x * m_ScaleX;
+                        float ey = m_Origin.y + proj.y * m_ScaleY;
+                        line(m_Origin.x, m_Origin.y, ex, ey);
+                        noStroke();
+                        fill(0, 0, 255);
+                        float value = closest.getCoordinate(i);
+                        String label;
+                        if(axis.getType() == Axis.NUMBER)
+                            label = String.valueOf(value);
+                        else
+                            label = axis.getCategory((int)(value + 0.5f));
+                        Utils.centeredText(g, label, ex, ey, 0xDFFFFFFF);
+                        x = x2;
+                        y = y2;
+                    }
+                }
+                // Tooltip
+                Utils.drawTooltip(g, closest.getName(), mouseX, mouseY);
+            }
         }
 
         // The OptionsPanel
@@ -379,6 +392,35 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         return null;
     }
 
+    private void brush()
+    {
+        for(Thing thing : m_Things)
+        {
+            Point2D.Float pos = new Point2D.Float();
+            boolean filtered = false;
+            for(Axis axis : m_Axes)
+            {
+                if(axis.filter(thing))
+                {
+                    filtered = true;
+                    break;
+                }
+                if(!axis.isShown())
+                    continue;
+                Point2D.Float proj = axis.project(thing);
+                pos.x += proj.x;
+                pos.y += proj.y;
+            }
+            if(!filtered)
+            {
+                float dx = m_Origin.x + pos.x * m_ScaleX - mouseX;
+                float dy = m_Origin.y + pos.y * m_ScaleY - mouseY;
+                if(dx*dx + dy*dy <= m_BrushSize*m_BrushSize)
+                    thing.setBrushed(true);
+            }
+        }
+    }
+
     @Override
     public void mouseDragged()
     {
@@ -391,6 +433,12 @@ public class StarCoordinates extends PApplet implements ComponentListener {
             float x = (mouseX - m_Origin.x)/m_ScaleX;
             float y = (mouseY - m_Origin.y)/m_ScaleY;
             m_ActiveAxis.setEndPoint(x, y);
+            redraw();
+        }
+        // Brushing
+        else if(m_IsBrushing)
+        {
+            brush();
             redraw();
         }
     }
@@ -408,6 +456,8 @@ public class StarCoordinates extends PApplet implements ComponentListener {
                 m_Action = ACT_HOVER;
             redraw();
         }
+        else if(m_IsBrushing)
+            redraw();
     }
 
     @Override
@@ -429,11 +479,17 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         if(m_OptionsPanel.click(mouseX, mouseY, button))
             return;
 
+        // Brushing
+
         m_ActiveAxis = findAxisUnder(mouseX, mouseY);
         if(m_ActiveAxis == null)
             m_Action = ACT_NONE;
         else
             m_Action = ACT_DRAGGING;
+
+        if(m_IsBrushing && m_Action == ACT_NONE)
+            brush();
+
         redraw();
     }
 
@@ -480,6 +536,16 @@ public class StarCoordinates extends PApplet implements ComponentListener {
     public Iterable<Thing> getThings()
     {
         return Collections.unmodifiableCollection(m_Things);
+    }
+
+    public boolean isBrushing()
+    {
+        return m_IsBrushing;
+    }
+
+    public void setBrushing(boolean b)
+    {
+        m_IsBrushing = b;
     }
 
 }

@@ -41,7 +41,7 @@ public class StarCoordinates extends PApplet implements ComponentListener {
     private OptionsPanel m_OptionsPanel;
 
     private boolean m_IsBrushing = false;
-    private int m_BrushSize = 10; // TODO : change brush size via mouse wheel
+    private int m_BrushSize = 10;
 
     /** Display type: default */
     public static final int FILTER_NORMAL = 0x0;
@@ -81,6 +81,13 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         noLoop();
         frame.setResizable(true);
         addComponentListener(this);
+        addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+            {
+                mouseWheel(evt.getWheelRotation());
+            }
+        });
     }
 
     /**
@@ -511,6 +518,19 @@ public class StarCoordinates extends PApplet implements ComponentListener {
     public void mouseExited(MouseEvent e)
     {
         mouseReleased();
+    }
+
+    protected void mouseWheel(int wheelRotation)
+    {
+        if(m_IsBrushing)
+        {
+            m_BrushSize += wheelRotation;
+            if(m_BrushSize < 2)
+                m_BrushSize = 2;
+            else if(m_BrushSize >= 100)
+                m_BrushSize = 100;
+            redraw();
+        }
     }
 
     @Override

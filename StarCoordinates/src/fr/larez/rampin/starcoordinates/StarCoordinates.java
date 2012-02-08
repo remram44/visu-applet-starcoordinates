@@ -2,6 +2,7 @@ package fr.larez.rampin.starcoordinates;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.Collections;
@@ -448,6 +449,12 @@ public class StarCoordinates extends PApplet implements ComponentListener {
             mouseMoved();
             redraw();
         }
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e)
+    {
+        mouseReleased();
     }
 
     @Override

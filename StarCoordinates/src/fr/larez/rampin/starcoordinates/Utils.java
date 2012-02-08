@@ -62,4 +62,17 @@ public class Utils {
         g.text(text, x, y);
     }
 
+    public static void centeredText(PGraphics g, String text, float x, float y, int bgcolor)
+    {
+        float ascent = g.textAscent(), descent = g.textDescent();
+        float width = g.textWidth(text);
+        x -= width/2;
+        y += ascent/2 - descent/2;
+        int fgcolor = g.fillColor;
+        g.fill(bgcolor);
+        g.rect(x, y - ascent, width, ascent + descent);
+        g.fill(fgcolor);
+        g.text(text, x, y);
+    }
+
 }

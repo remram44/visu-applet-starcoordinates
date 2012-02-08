@@ -3,6 +3,7 @@ package fr.larez.rampin.starcoordinates;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * One of the axes of the object space.
@@ -111,6 +112,20 @@ class Axis {
             m_EndValue = j;
             return j;
         }
+    }
+
+    /**
+     * Returns the category label from the number that was assigned.
+     */
+    public String getCategory(int value)
+    {
+        assert(m_Type == CATEGORY && m_Categories != null);
+        for(Entry<String, Integer> cat : m_Categories.entrySet())
+        {
+            if(cat.getValue() == value)
+                return cat.getKey();
+        }
+        return null; // Shouldn't happen
     }
 
     public void setShown(boolean shown)

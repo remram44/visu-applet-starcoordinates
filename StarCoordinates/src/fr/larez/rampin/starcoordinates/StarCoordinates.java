@@ -238,7 +238,13 @@ public class StarCoordinates extends PApplet implements ComponentListener {
                     line(m_Origin.x, m_Origin.y, ex, ey);
                     noStroke();
                     fill(0, 0, 255);
-                    Utils.centeredText(g, String.valueOf(closest.getCoordinate(i)), ex, ey);
+                    float value = closest.getCoordinate(i);
+                    String label;
+                    if(axis.getType() == Axis.NUMBER)
+                        label = String.valueOf(value);
+                    else
+                        label = axis.getCategory((int)(value + 0.5f));
+                    Utils.centeredText(g, label, ex, ey, 0xDFFFFFFF);
                     x = x2;
                     y = y2;
                 }

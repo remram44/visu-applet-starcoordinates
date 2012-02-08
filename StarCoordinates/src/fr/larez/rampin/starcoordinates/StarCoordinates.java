@@ -79,7 +79,8 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         rectMode(CORNER);
         ellipseMode(CORNER);
         noLoop();
-        frame.setResizable(true);
+        if(frame != null)
+            frame.setResizable(true);
         addComponentListener(this);
         addMouseWheelListener(new java.awt.event.MouseWheelListener() {
             @Override

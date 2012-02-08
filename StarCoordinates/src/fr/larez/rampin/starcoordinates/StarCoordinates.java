@@ -110,10 +110,10 @@ public class StarCoordinates extends PApplet implements ComponentListener {
             int filters = thing.isBrushed()?FILTER_BRUSHED:FILTER_NORMAL;
             for(Axis axis : m_Axes)
             {
-                if(!axis.isShown())
-                    continue;
                 if(axis.filter(thing))
                     filters |= FILTER_NOTSHOWN;
+                if(!axis.isShown())
+                    continue;
                 Point2D.Float proj = axis.project(thing);
                 pos.x += proj.x;
                 pos.y += proj.y;
@@ -123,7 +123,11 @@ public class StarCoordinates extends PApplet implements ComponentListener {
             switch(filters)
             {
             case FILTER_NORMAL:
-                stroke(0, 0, 0);
+                if(m_ColorAxis != null)
+                    // Use color assignment
+                    stroke(0xFF000000 | m_ColorAxis.color(thing));
+                else
+                    stroke(0, 0, 0);
                 break;
             case FILTER_BRUSHED:
                 stroke(255, 0, 0);
@@ -232,6 +236,7 @@ public class StarCoordinates extends PApplet implements ComponentListener {
                     float ex = m_Origin.x + proj.x * m_ScaleX;
                     float ey = m_Origin.y + proj.y * m_ScaleY;
                     line(m_Origin.x, m_Origin.y, ex, ey);
+                    noStroke();
                     fill(0, 0, 255);
                     Utils.centeredText(g, String.valueOf(closest.getCoordinate(i)), ex, ey);
                     x = x2;

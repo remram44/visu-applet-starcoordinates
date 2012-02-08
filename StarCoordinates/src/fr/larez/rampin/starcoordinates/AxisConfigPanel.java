@@ -116,23 +116,38 @@ public class AxisConfigPanel {
         }
 
         // Graph
-        g.noStroke();
-        g.fill(191, 191, 191);
-        g.rect(GRAPH_X, GRAPH_Y, GRAPH_W, GRAPH_H);
-        g.stroke(0, 0, 0);
-        g.noFill();
-        for(int i = 0; i < GRAPH_W; i++)
-            g.line(GRAPH_X + i, GRAPH_Y + GRAPH_H, GRAPH_X + i, GRAPH_Y + GRAPH_H - m_Graph[i]*GRAPH_H/m_GraphMax);
-        g.stroke(255, 0, 0);
-        if(m_Axis.getFilterMin() != null)
         {
-            int l1 = (int)((m_Axis.getFilterMin() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
-            g.line(GRAPH_X + l1, GRAPH_Y, GRAPH_X + l1, GRAPH_Y + GRAPH_H);
-        }
-        if(m_Axis.getFilterMax() != null)
-        {
-            int l2 = (int)((m_Axis.getFilterMax() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
-            g.line(GRAPH_X + l2, GRAPH_Y, GRAPH_X + l2, GRAPH_Y + GRAPH_H);
+            int min, max;
+            if(m_Axis.getFilterMin() != null)
+                min = (int)((m_Axis.getFilterMin() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
+            else
+                min = 0;
+            if(m_Axis.getFilterMax() != null)
+                max = (int)((m_Axis.getFilterMax() + m_Axis.getEndValue()) * GRAPH_W / (m_Axis.getEndValue() * 2.0f));
+            else
+                max = GRAPH_W;
+            g.noStroke();
+            g.fill(191, 191, 191);
+            g.rect(GRAPH_X, GRAPH_Y, GRAPH_W, GRAPH_H);
+            g.noFill();
+            for(int i = 0; i < GRAPH_W; i++)
+            {
+                if(i >= min && i <= max)
+                {
+                    if(m_App.getColorAxis() == m_Axis)
+                        g.stroke(Axis.COLOR_GRADIENT.color(i*1.0f/GRAPH_W));
+                    else
+                        g.stroke(0, 0, 0);
+                }
+                else
+                    g.stroke(127, 127, 127);
+                g.line(GRAPH_X + i, GRAPH_Y + GRAPH_H, GRAPH_X + i, GRAPH_Y + GRAPH_H - m_Graph[i]*GRAPH_H/m_GraphMax);
+            }
+            g.stroke(255, 0, 0);
+            if(m_Axis.getFilterMin() != null)
+                g.line(GRAPH_X + min, GRAPH_Y, GRAPH_X + min, GRAPH_Y + GRAPH_H);
+            if(m_Axis.getFilterMax() != null)
+                g.line(GRAPH_X + max, GRAPH_Y, GRAPH_X + max, GRAPH_Y + GRAPH_H);
         }
 
         g.popMatrix();

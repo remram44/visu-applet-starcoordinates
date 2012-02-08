@@ -31,6 +31,18 @@ class Axis {
     public static final int NUMBER = 1;
     public static final int CATEGORY = 2;
 
+    public static final Gradient COLOR_GRADIENT;
+    static {
+        COLOR_GRADIENT = new Gradient();
+        COLOR_GRADIENT.addPoint(0.00f, 178, 0, 183);
+        COLOR_GRADIENT.addPoint(0.17f, 0, 0, 255);
+        COLOR_GRADIENT.addPoint(0.33f, 127, 255, 255);
+        COLOR_GRADIENT.addPoint(0.50f, 0, 255, 0);
+        COLOR_GRADIENT.addPoint(0.67f, 255, 255, 0);
+        COLOR_GRADIENT.addPoint(0.83f, 255, 44, 0);
+        COLOR_GRADIENT.addPoint(1.00f, 0, 0, 0);
+    }
+
     public Axis(String label, String typename, int coordinate)
     {
         m_Label = label;
@@ -156,6 +168,15 @@ class Axis {
     }
 
     /**
+     * Assign a color to a Thing given its coordinate on this axis.
+     */
+    public int color(Thing thing)
+    {
+        float coordinate = thing.getCoordinate(m_Coordinate) / m_EndValue;
+        return COLOR_GRADIENT.color(0.5f + 0.5f * coordinate);
+    }
+
+    /**
      * Calibrates this Axis, eg computes the scale from the values.
      */
     public void calibrate()
@@ -167,12 +188,12 @@ class Axis {
             // Ex : m_MaxValue = 73
             // inc = 10
             // m_EndValue = 80
-            /*float inc = (float)Math.pow(10.0, (int)Math.log10(m_MaxValue));
-            m_EndValue = inc * (int)(m_MaxValue/inc + 0.99);*/
+            float inc = (float)Math.pow(10.0, (int)Math.log10(m_MaxValue));
+            m_EndValue = inc * (int)(m_MaxValue/inc + 0.99);
 
             // Ex : m_MaxValue = 73
             // m_EndValue = 100
-            m_EndValue = (float)Math.pow(10.0, (int)(Math.log10(m_MaxValue) + 1));
+            /*m_EndValue = (float)Math.pow(10.0, (int)(Math.log10(m_MaxValue) + 1));*/
 
             m_MaxValue = 0.0f;
         }

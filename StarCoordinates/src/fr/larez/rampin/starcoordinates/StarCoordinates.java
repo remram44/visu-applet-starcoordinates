@@ -548,4 +548,10 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         m_IsBrushing = b;
     }
 
+    public void resetBrushing()
+    {
+        for(Thing thing : m_Things)
+            thing.setBrushed(false);
+    }
+
 }

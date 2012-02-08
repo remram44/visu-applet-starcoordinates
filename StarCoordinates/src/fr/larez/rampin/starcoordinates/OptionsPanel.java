@@ -13,13 +13,18 @@ public class OptionsPanel {
     private AxisConfigPanel[] m_Panels;
     private AxisConfigPanel m_Active = null;
 
-    private static final int CHECKBOX_X = 10;
-    private static final int CHECKBOX_Y = 10;
-    private static final int CHECKBOX_SIZE = 8;
+    private static final int BRUSH_CHECKBOX_X = 5;
+    private static final int BRUSH_CHECKBOX_Y = 10;
+    private static final int BRUSH_CHECKBOX_SIZE = 8;
 
-    private static final int LABEL_X = 20;
-    private static final int LABEL_Y = 14;
-    private static final int RIGHT = LABEL_X + 100; // FIXME
+    private static final int BRUSH_LABEL_X = 15;
+    private static final int BRUSH_LABEL_Y = 14;
+    private static final int BRUSH_RIGHT = BRUSH_LABEL_X + 90; // FIXME
+
+    private static final int RESET_X = 12;
+    private static final int RESET_Y = 22;
+    private static final int RESET_W = 90;
+    private static final int RESET_H = 14;
 
     public OptionsPanel(Axis[] axes, StarCoordinates app)
     {
@@ -34,7 +39,7 @@ public class OptionsPanel {
      */
     public void layout(int width, int height)
     {
-        int y = 30;
+        int y = 50;
         int x = 10;
 
         for(int i = 0; i < m_Panels.length; i++)
@@ -59,19 +64,29 @@ public class OptionsPanel {
         {
             // Checkbox
             g.fill(255, 255, 255);
+            g.noStroke();
+            g.rect(BRUSH_CHECKBOX_X, BRUSH_CHECKBOX_Y, BRUSH_RIGHT - BRUSH_CHECKBOX_X, BRUSH_CHECKBOX_SIZE);
+            g.fill(255, 255, 255);
             g.stroke(0, 0, 0);
-            g.rect(CHECKBOX_X, CHECKBOX_Y, CHECKBOX_SIZE, CHECKBOX_SIZE);
+            g.rect(BRUSH_CHECKBOX_X, BRUSH_CHECKBOX_Y, BRUSH_CHECKBOX_SIZE, BRUSH_CHECKBOX_SIZE);
             if(m_App.isBrushing())
             {
-                final int x2 = CHECKBOX_X + CHECKBOX_SIZE;
-                final int y2 = CHECKBOX_Y + CHECKBOX_SIZE;
-                g.line(CHECKBOX_X, CHECKBOX_Y, x2, y2);
-                g.line(x2, CHECKBOX_Y, CHECKBOX_X, y2);
+                final int x2 = BRUSH_CHECKBOX_X + BRUSH_CHECKBOX_SIZE;
+                final int y2 = BRUSH_CHECKBOX_Y + BRUSH_CHECKBOX_SIZE;
+                g.line(BRUSH_CHECKBOX_X, BRUSH_CHECKBOX_Y, x2, y2);
+                g.line(x2, BRUSH_CHECKBOX_Y, BRUSH_CHECKBOX_X, y2);
             }
 
             // Label
             g.fill(0, 0, 0);
-            g.text("Brushing mode", LABEL_X, LABEL_Y + g.textAscent()/2 - g.textDescent()/2);
+            g.text("Brushing mode", BRUSH_LABEL_X, BRUSH_LABEL_Y + g.textAscent()/2 - g.textDescent()/2);
+
+            // Button
+            g.fill(255, 255, 255);
+            g.noStroke();
+            g.rect(RESET_X, RESET_Y, RESET_W, RESET_H);
+            g.fill(0, 0, 0);
+            g.text("Clear brushing", RESET_X, RESET_Y + g.textAscent());
         }
 
         // Panels
@@ -99,9 +114,16 @@ public class OptionsPanel {
      */
     public boolean click(int x, int y, int button)
     {
-        if(x >= CHECKBOX_X && y >= CHECKBOX_Y && x < RIGHT && y < CHECKBOX_Y + CHECKBOX_SIZE)
+        if(x >= BRUSH_CHECKBOX_X && y >= BRUSH_CHECKBOX_Y && x < BRUSH_RIGHT && y < BRUSH_CHECKBOX_Y + BRUSH_CHECKBOX_SIZE)
         {
             m_App.setBrushing(!m_App.isBrushing());
+            m_App.redraw();
+            return true;
+        }
+
+        if(x >= RESET_X && y >= RESET_Y && x < RESET_X + RESET_W && y < RESET_Y + RESET_H)
+        {
+            m_App.resetBrushing();
             m_App.redraw();
             return true;
         }

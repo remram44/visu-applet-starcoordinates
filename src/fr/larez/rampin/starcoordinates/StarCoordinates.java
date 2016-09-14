@@ -294,11 +294,11 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         String[] lines = loadStrings(file);
 
         // First line contains the columns names
-        StringTokenizer names = new StringTokenizer(lines[0], ";");
+        StringTokenizer names = new StringTokenizer(lines[0], ",");
         int nb_tokens = names.countTokens();
 
         // Second line contains the datatypes for each column
-        StringTokenizer types = new StringTokenizer(lines[1], ";");
+        StringTokenizer types = new StringTokenizer(lines[1], ",");
         if(types.countTokens() != nb_tokens)
             throw new IOException("Unexpected number of types on line 2");
 
@@ -332,7 +332,7 @@ public class StarCoordinates extends PApplet implements ComponentListener {
         // Read ALL the things!
         for(i = 2; i < lines.length; i++)
         {
-            StringTokenizer fields = new StringTokenizer(lines[i], ";");
+            StringTokenizer fields = new StringTokenizer(lines[i], ",");
             if(fields.countTokens() != nb_tokens)
                 throw new IOException("Unexpected number of values on line " + (i+1));
             String name = fields.nextToken();
